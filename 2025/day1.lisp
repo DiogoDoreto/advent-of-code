@@ -1,0 +1,90 @@
+(defun parse-file (filepath)
+  (with-open-file (input filepath)
+    (loop for direction = (read-char input nil)
+          while direction
+          for amount = (parse-integer (read-line input))
+          collect (cons direction amount))))
+
+;;; Part 1
+
+(defun do-rotation (instruction current-rotation)
+  (let* ((direction (car instruction))
+         (amount (cdr instruction))
+         (amount (if (char= direction #\L)
+                     (- amount)
+                     amount)))
+    (mod (+ current-rotation amount)
+         100)))
+
+(defun resolve-part1 ()
+  (let ((current-rotation 50)
+        (zeroes-seen 0))
+    (dolist (instruction (parse-file "./day1-input1.txt"))
+      (setf current-rotation
+            (do-rotation instruction current-rotation))
+      (when (= 0 current-rotation)
+        (incf zeroes-seen)))
+    (format t "Part 1: ~S~%" zeroes-seen)))
+
+(resolve-part1)
+
+;;; Part 2
+
+(defun do-rotation-and-check-for-zero (instruction current-rotation)
+  (let* ((direction (car instruction))
+         (amount (cdr instruction))
+         (amount (if (char= direction #\L)
+                     (- amount)
+                     amount))
+         (acc-rotation (+ current-rotation amount))
+         (new-rotation (mod acc-rotation 100))
+         (zeroes-crossed (abs (floor (/ acc-rotation 100)))))
+    (when (and (= 0 new-rotation) (<= acc-rotation 0))
+      (incf zeroes-crossed))
+    (when (and (= 0 current-rotation) (< acc-rotation 0))
+      (decf zeroes-crossed))
+    (values new-rotation zeroes-crossed)))
+
+(defun test-instruction-part2 (initial dir amount result)
+  (let ((instruction (cons dir amount)))
+    (multiple-value-bind (new-rotation zeroes-crossed)
+        (do-rotation-and-check-for-zero instruction initial)
+      (assert (= zeroes-crossed result)
+              (zeroes-crossed result)
+              "From ~S by ~S to ~S. Expected ~S, got ~S"
+              initial instruction new-rotation result zeroes-crossed))))
+
+(defun test-part2 ()
+  (test-instruction-part2 50 #\L 5 0)
+  (test-instruction-part2 50 #\L 50 1)
+  (test-instruction-part2 50 #\L 100 1)
+  (test-instruction-part2 50 #\L 150 2)
+  (test-instruction-part2 50 #\L 200 2)
+  (test-instruction-part2 50 #\L 250 3)
+  (test-instruction-part2 1 #\L 1 1)
+  (test-instruction-part2 0 #\L 1 0)
+  (test-instruction-part2 0 #\L 100 1)
+
+  (test-instruction-part2 50 #\R 5 0)
+  (test-instruction-part2 50 #\R 50 1)
+  (test-instruction-part2 50 #\R 100 1)
+  (test-instruction-part2 50 #\R 150 2)
+  (test-instruction-part2 50 #\R 200 2)
+  (test-instruction-part2 50 #\R 250 3)
+  (test-instruction-part2 99 #\R 1 1)
+  (test-instruction-part2 0 #\R 1 0)
+  (test-instruction-part2 0 #\R 100 1))
+
+(test-part2)
+
+(defun resolve-part2 ()
+  (let ((current-rotation 50)
+        (zeroes-seen 0))
+    (dolist (instruction (parse-file "./day1-input1.txt"))
+      (multiple-value-bind (new-rotation zeroes-crossed)
+          (do-rotation-and-check-for-zero instruction current-rotation)
+        (setf current-rotation new-rotation)
+        (incf zeroes-seen zeroes-crossed)))
+    (format t "Part 2: ~S~%" zeroes-seen)))
+
+(resolve-part2)
