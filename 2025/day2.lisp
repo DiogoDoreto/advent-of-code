@@ -14,7 +14,7 @@
         (num2 (read-int stream)))
     (list num1 num2)))
 
-(defun process-input (sum-invalids-fn)
+(defun process-input-file (sum-invalids-fn)
   (with-open-file (input "./day2-input1.txt")
     (loop for next = (peek-char t input nil)
           while next
@@ -51,7 +51,7 @@
 (assert (equal (sum-invalid-ids-double-pattern 998 1012) 1010))
 
 (format t "Day 2, part 1 = ~S~%"
-        (process-input #'sum-invalid-ids-double-pattern))
+        (process-input-file #'sum-invalid-ids-double-pattern))
                                         ;  => "Day 2, part 1 = 12599655151"
 
 
@@ -112,5 +112,5 @@
                                 and sum id)))))
 
 (format t "Day 2, part 2 = ~S~%"
-        (process-input #'sum-invalid-ids-multi-pattern))
+        (process-input-file #'sum-invalid-ids-multi-pattern))
                                         ;  => "Day 2, part 2 = 20942028255"
