@@ -14,11 +14,6 @@
           ps: with ps; [
             qlot
             qlot-cli
-
-            alexandria
-            cl-ppcre
-            serapeum
-            str
           ]
         );
       in
